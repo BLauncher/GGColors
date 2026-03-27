@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="color-scheme" content="light">
+    <title>GGColors · gradient & code painter</title>
+    <!-- Google Material Icons (for a clean Google-style icon) -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #ffffff;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* main card container */
+        .gg-card {
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+            overflow: hidden;
+            backdrop-filter: blur(0px);
+        }
+
+        /* header with google icon */
+        .gg-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1.5rem 2rem 0.8rem 2rem;
+            border-bottom: 1px solid #f0f0f0;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .google-icon-svg {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        .google-icon-svg:hover {
+            transform: scale(1.02);
+        }
+        .gg-header h1 {
+            font-size: 1.85rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e2b3c, #2c4e6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        /* mode toggle buttons */
+        .mode-switch {
+            display: flex;
+            gap: 12px;
+            background: #f8f9fc;
+            padding: 5px;
+            border-radius: 60px;
+        }
+        .mode-btn {
+            border: none;
+            background: transparent;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 550;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #3c4b5a;
+        }
+        .mode-btn.active {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            color: #1266e2;
+            font-weight: 600;
+        }
+        .mode-btn:not(.active):hover {
+            background: #eef2f7;
+        }
+
+        /* content padding */
+        .gg-content {
+            padding: 1.8rem 2rem 2rem 2rem;
+        }
+
+        /* panels */
+        .mode-panel {
+            transition: opacity 0.2s ease;
+            margin-bottom: 2rem;
+        }
+        .hidden-panel {
+            display: none;
+        }
+
+        /* form elements */
+        .form-group {
+            margin-bottom: 1.6rem;
+        }
+        label {
+            font-weight: 550;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #1f2a3e;
+        }
+        textarea, .code-textarea {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 12px 18px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            background: #fefefe;
+            transition: 0.2s;
+            resize: vertical;
+            field-sizing: content;
+        }
+        textarea:focus, .code-textarea:focus {
+            outline: none;
+            border-color: #7c9bcf;
+            box-shadow: 0 0 0 3px rgba(18, 102, 226, 0.1);
+        }
+        /* color picker row */
+        .color-picker-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            background: #fbfdff;
+            padding: 0.8rem 0;
+            border-radius: 28px;
+        }
+        .color-item {
+            flex: 1;
+            min-width: 100px;
+        }
+        .color-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 48px;
+            border: 1px solid #e2edf7;
+            border-radius: 28px;
+            cursor: pointer;
+            background: white;
+            padding: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: 0.2s;
+        }
+        input[type="color"]:hover {
+            transform: scale(0.98);
+        }
+
+        /* preset chips */
+        .preset-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 0.5rem;
+            list-style: none;
+        }
+        .preset-list li {
+            display: inline-block;
+        }
+        .preset-btn {
+            background: #f2f5f9;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #2c3e4e;
+            border: 1px solid transparent;
+        }
+        .preset-btn:hover {
+            background: #e6edf6;
+            border-color: #cbdde9;
+            transform: translateY(-1px);
+        }
+
+        /* output preview area */
+        .preview-box {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 1.4rem;
+            margin: 1rem 0 1.2rem 0;
+            border: 1px solid #edf2f7;
+            box-shadow: inset 0 1px 2px #f9f9fc, 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+        #out_text {
+            font-size: 1.9rem;
+            font-weight: 520;
+            line-height: 1.3;
+            word-break: break-word;
+            letter-spacing: 0.01em;
+            transition: all 0.1s ease;
+            min-height: 80px;
+        }
+        #out_text span {
+            transition: color 0.08s linear;
+        }
+        .code-block {
+            margin-top: 0.8rem;
+        }
+        .copy-btn {
+            margin-top: 12px;
+            background: #f0f4f9;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 550;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            color: #1f3b4c;
+        }
+        .copy-btn:hover {
+            background: #e2eaf2;
+            transform: scale(0.98);
+        }
+
+        hr {
+            margin: 1rem 0;
+            border-color: #eef2f8;
+        }
+
+        .info-note {
+            font-size: 0.75rem;
+            color: #6b7c93;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        button, .preset-btn, .mode-btn {
+            cursor: pointer;
+        }
+        .rounded-everything {
+            border-radius: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="gg-card">
+    <div class="gg-header">
+        <div class="title-area">
+            <!-- Google G style icon (simple google colors) -->
+            <svg class="google-icon-svg" viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            <h1>GGColors</h1>
+        </div>
+        <div class="mode-switch">
+            <button class="mode-btn active" data-mode="gradient">🎨 Gradient mode</button>
+            <button class="mode-btn" data-mode="code">⌨️ Code mode</button>
+        </div>
+    </div>
+
+    <div class="gg-content">
+        <!-- MODE 1: gradient + color pickers -->
+        <div id="modeGradientPanel" class="mode-panel">
+            <div class="form-group">
+                <label for="textInput">📝 Input Text</label>
+                <textarea id="textInput" rows="2" placeholder="Type or paste any text...">Your text...</textarea>
+            </div>
+            <div class="form-group">
+                <label>🎨 Gradient colors (start → mid → end)</label>
+                <div class="color-picker-row">
+                    <div class="color-item"><div class="color-label">Start</div><input type="color" id="fm1" value="#FF0000"></div>
+                    <div class="color-item"><div class="color-label">Mid</div><input type="color" id="fm2" value="#FFFF00"></div>
+                    <div class="color-item"><div class="color-label">End</div><input type="color" id="fm3" value="#00FF00"></div>
+                </div>
+                <div>
+                    <ul class="preset-list">
+                        <li><a class="preset-btn" data-start="#FF0000" data-mid="#FFFF00" data-end="#00FF00">🔥 Red→Green</a></li>
+                        <li><a class="preset-btn" data-start="#FF0000" data-mid="#FF00FF" data-end="#0000FF">🌈 Red→Blue</a></li>
+                        <li><a class="preset-btn" data-start="#00FF00" data-mid="#FFFF00" data-end="#FF0000">🍏 Green→Red</a></li>
+                        <li><a class="preset-btn" data-start="#00FF00" data-mid="#00FFFF" data-end="#0000FF">🌿 Green→Blue</a></li>
+                        <li><a class="preset-btn" data-start="#0000FF" data-mid="#FF00FF" data-end="#FF0000">💙 Blue→Red</a></li>
+                        <li><a class="preset-btn" data-start="#0000FF" data-mid="#00FFFF" data-end="#00FF00">💎 Blue→Green</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODE 2: code input mode -->
+        <div id="modeCodePanel" class="mode-panel hidden-panel">
+            <div class="form-group">
+                <label for="codeInput">🔣 Color markup code</label>
+                <textarea id="codeInput" rows="3" placeholder='Example: &lt;cff0000&gt;H&lt;c00ff00&gt;i&lt;cffaa44&gt;!&lt;/c&gt;'></textarea>
+                <div class="info-note">Format: &lt;cRRGGBB&gt;char  (each character wrapped, ends with &lt;/c&gt;)</div>
+            </div>
+        </div>
+
+        <!-- OUTPUT SECTION (shared) -->
+        <div class="preview-box">
+            <div class="preview-title">✨ Colored Preview</div>
+            <div id="out_text" style="min-height: 70px;"></div>
+        </div>
+        <div class="form-group code-block">
+            <label for="out_text_code">📋 Output code (ready to reuse)</label>
+            <textarea class="code-textarea" id="out_text_code" rows="3" readonly></textarea>
+            <button id="copyBtn" class="copy-btn">📎 Copy code</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // DOM elements
+        const modeGradientPanel = document.getElementById('modeGradientPanel');
+        const modeCodePanel = document.getElementById('modeCodePanel');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const textInput = document.getElementById('textInput');
+        const fm1 = document.getElementById('fm1');
+        const fm2 = document.getElementById('fm2');
+        const fm3 = document.getElementById('fm3');
+        const codeInput = document.getElementById('codeInput');
+        const outTextPreview = document.getElementById('out_text');
+        const outCodeArea = document.getElementById('out_text_code');
+        const copyBtn = document.getElementById('copyBtn');
+
+        let currentMode = 'gradient';   // 'gradient' or 'code'
+
+        // ---- helper color functions (same algorithm as original) ----
+        function hex(c) {
+            const s = "0123456789abcdef";
+            let i = parseInt(c);
+            if (i == 0 || isNaN(c)) return "00";
+            i = Math.round(Math.min(Math.max(0, i), 255));
+            return s.charAt((i - i % 16) / 16) + s.charAt(i % 16);
+        }
+        function convertToHex(rgbArr) {
+            return hex(rgbArr[0]) + hex(rgbArr[1]) + hex(rgbArr[2]);
+        }
+        function convertToRGB(hexColor) {
+            let raw = hexColor;
+            if (raw.charAt(0) === '#') raw = raw.substring(1);
+            return [
+                parseInt(raw.substring(0,2), 16),
+                parseInt(raw.substring(2,4), 16),
+                parseInt(raw.substring(4,6), 16)
+            ];
+        }
+        function generateColors(colorStart, colorEnd, colorCount) {
+            const start = convertToRGB(colorStart);
+            const end = convertToRGB(colorEnd);
+            const result = [];
+            for (let i = 0; i < colorCount; i++) {
+                const t = (colorCount === 1) ? 0 : i / (colorCount - 1);
+                const r = Math.round(start[0] * (1 - t) + end[0] * t);
+                const g = Math.round(start[1] * (1 - t) + end[1] * t);
+                const b = Math.round(start[2] * (1 - t) + end[2] * t);
+                result.push(convertToHex([r,g,b]));
+            }
+            return result;
+        }
+        function generateMultiColors(colorStart, colorMid, colorEnd, colorCount) {
+            if (colorCount <= 0) return [];
+            const half = Math.floor(colorCount / 2);
+            const firstHalf = generateColors(colorStart, colorMid, half);
+            const secondHalf = generateColors(colorMid, colorEnd, half);
+            let result = [...firstHalf];
+            if (colorCount % 2 === 1) {
+                let midRaw = colorMid;
+                if (midRaw.charAt(0) === '#') midRaw = midRaw.substring(1);
+                result.push(midRaw);
+            }
+            return result.concat(secondHalf);
+        }
+
+        // ---- render for gradient mode ----
+        function renderGradientMode() {
+            const rawText = textInput.value;
+            const len = rawText.length;
+            if (len === 0) {
+                outTextPreview.innerHTML = '';
+                outCodeArea.value = '';
+                return;
+            }
+            const startVal = fm1.value;
+            const midVal = fm2.value;
+            const endVal = fm3.value;
+            const colorHexArray = generateMultiColors(startVal, midVal, endVal, len);
+            // clear preview
+            outTextPreview.innerHTML = '';
+            let codeBuilder = '';
+            for (let i = 0; i < rawText.length; i++) {
+                const ch = rawText.charAt(i);
+                const hexColor = colorHexArray[i] || '000000';
+                const span = document.createElement('span');
+                span.style.color = '#' + hexColor;
+                span.innerText = ch;
+                outTextPreview.appendChild(span);
+                codeBuilder += `<c${hexColor}>${ch}`;
+            }
+            codeBuilder += `</c>`;
+            outCodeArea.value = codeBuilder;
+        }
+
+        // ---- render for code mode (parse <cRRGGBB>char) ----
+        function renderCodeMode() {
+            const codeStr = codeInput.value;
+            if (!codeStr.trim()) {
+                outTextPreview.innerHTML = '<span style="color:#aaa;">✨ waiting for code...</span>';
+                outCodeArea.value = '';
+                return;
+            }
+            // regex to capture: <cRRGGBB>X  (case-insensitive, exactly 6 hex after c)
+            const regex = /<c([0-9a-fA-F]{6})>([\s\S])/g;
+            let matches = [];
+            let match;
+            while ((match = regex.exec(codeStr)) !== null) {
+                matches.push({
+                    color: match[1].toLowerCase(),
+                    char: match[2]
+                });
+            }
+            if (matches.length === 0) {
+                outTextPreview.innerHTML = '<span style="color:#c00;">⚠️ Invalid code format. Use &lt;cRRGGBB&gt;char pattern</span>';
+                outCodeArea.value = '';
+                return;
+            }
+            // build preview and normalized code
+            outTextPreview.innerHTML = '';
+            let normalizedCode = '';
+            for (let item of matches) {
+                const span = document.createElement('span');
+                span.style.color = '#' + item.color;
+                span.innerText = item.char;
+                outTextPreview.appendChild(span);
+                normalizedCode += `<c${item.color}>${item.char}`;
+            }
+            normalizedCode += `</c>`;
+            outCodeArea.value = normalizedCode;
+        }
+
+        // ---- master update based on current mode ----
+        function updateRender() {
+            if (currentMode === 'gradient') {
+                renderGradientMode();
+            } else {
+                renderCodeMode();
+            }
+        }
+
+        // ---- switch mode UI & logic ----
+        function setMode(mode) {
+            currentMode = mode;
+            if (mode === 'gradient') {
+                modeGradientPanel.classList.remove('hidden-panel');
+                modeCodePanel.classList.add('hidden-panel');
+                // sync active button styles
+                modeBtns.forEach(btn => {
+                    if (btn.getAttribute('data-mode') === 'gradient') btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+                // re-render from current gradient inputs
+                updateRender();
+            } else {
+                modeGradientPanel.classList.add('hidden-panel');
+                modeCodePanel.classList.remove('hidden-panel');
+                modeBtns.forEach(btn => {
+                    if (btn.getAttribute('data-mode') === 'code') btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+                updateRender();
+            }
+        }
+
+        // ---- preset colors (gradient mode) ----
+        function setColorPreset(start, mid, end) {
+            fm1.value = start;
+            fm2.value = mid;
+            fm3.value = end;
+            if (currentMode === 'gradient') updateRender();
+        }
+
+        // ---- copy to clipboard ----
+        function copyToClipboard() {
+            const codeTextarea = outCodeArea;
+            if (!codeTextarea.value) return;
+            codeTextarea.select();
+            codeTextarea.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(codeTextarea.value).catch(() => {
+                document.execCommand('copy');
+            });
+            // brief visual feedback
+            const copyBtnElem = copyBtn;
+            const originalText = copyBtnElem.innerText;
+            copyBtnElem.innerText = '✓ Copied!';
+            setTimeout(() => { copyBtnElem.innerText = originalText; }, 1200);
+        }
+
+        // ---- event listeners ----
+        function bindEvents() {
+            textInput.addEventListener('input', () => { if(currentMode === 'gradient') updateRender(); });
+            fm1.addEventListener('input', () => { if(currentMode === 'gradient') updateRender(); });
+            fm2.addEventListener('input', () => { if(currentMode === 'gradient') updateRender(); });
+            fm3.addEventListener('input', () => { if(currentMode === 'gradient') updateRender(); });
+            codeInput.addEventListener('input', () => { if(currentMode === 'code') updateRender(); });
+            copyBtn.addEventListener('click', copyToClipboard);
+            
+            // preset links
+            const presetBtns = document.querySelectorAll('.preset-btn');
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const start = btn.getAttribute('data-start');
+                    const mid = btn.getAttribute('data-mid');
+                    const end = btn.getAttribute('data-end');
+                    if (start && mid && end) {
+                        setColorPreset(start, mid, end);
+                    }
+                });
+            });
+            
+            // mode switch buttons
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modeVal = btn.getAttribute('data-mode');
+                    if (modeVal === 'gradient') setMode('gradient');
+                    else if (modeVal === 'code') setMode('code');
+                });
+            });
+        }
+
+        // initial call
+        bindEvents();
+        // set default gradient values as in original first preset
+        fm1.value = '#FF0000';
+        fm2.value = '#FFFF00';
+        fm3.value = '#00FF00';
+        textInput.value = 'Your text...';
+        codeInput.value = '<cff0000>Y<cffaa33>o<cffff00>u<c44ff44>r<c33ff99> <c3399ff>t<c3366ff>e<c6633ff>x<c9933ff>t<cff33aa>...';
+        setMode('gradient');
+        // additional small animation on load
+    })();
+</script>
+</body>
+</html>
